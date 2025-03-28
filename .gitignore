@@ -57,3 +57,18 @@ Thumbs.db
 
 # cache
 .cache/
+
+# new additions
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+.idea
+.vscode
+*.log
+.env
+.env.local
+.next
