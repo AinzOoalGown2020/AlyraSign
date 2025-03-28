@@ -24,14 +24,10 @@ export default function AppWalletProvider({
   const network = WalletAdapterNetwork.Devnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
 
-  const wallets = useMemo(
-    () => [
-      // manually add any legacy wallet adapters here
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-    ],
-    [network]
-  )
+  const wallets = useMemo(() => [
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter(),
+  ], [])
 
   return (
     <ConnectionProvider endpoint={endpoint}>

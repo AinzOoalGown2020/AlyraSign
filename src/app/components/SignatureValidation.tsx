@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { validateSignature, saveSignature, SignatureData } from '../services/signature.service';
+import Image from 'next/image'
 
 interface SignatureValidationProps {
   signature: string;
@@ -64,9 +65,11 @@ export default function SignatureValidation({
   return (
     <div className="space-y-4">
       <div className="border-2 border-gray-300 rounded-lg p-4">
-        <img
-          src={signature}
-          alt="Signature de l'étudiant"
+        <Image 
+          src={signature} 
+          alt="Signature"
+          width={300}
+          height={200}
           className="max-w-full h-auto"
         />
       </div>

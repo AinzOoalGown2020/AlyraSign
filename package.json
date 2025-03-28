@@ -24,7 +24,8 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
     "react-redux": "^9.1.0",
-    "react-toastify": "^10.0.4"
+    "react-toastify": "^10.0.4",
+    "pino-pretty": "^10.3.1"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.5",
