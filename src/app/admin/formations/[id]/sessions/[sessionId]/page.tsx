@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { AdminGuard } from '../../../../components/AdminGuard';
-import AddStudentForm from '../../../../components/AddStudentForm';
-import SignatureValidation from '../../../../components/SignatureValidation';
+import { AdminGuard } from '@/app/components/AdminGuard';
+import AddStudentForm from '@/app/components/AddStudentForm';
+import SignatureValidation from '@/app/components/SignatureValidation';
 
 interface Presence {
   id: string;
