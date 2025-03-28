@@ -1,6 +1,56 @@
-# AlyraSign
+# AlyraSign - Application de Gestion des Présences
 
-Programme de gestion des présences sur Solana développé avec Anchor.
+Application de gestion des présences pour les étudiants utilisant Solana et Anchor.
+
+## Configuration de l'Administrateur
+
+### Configuration de l'adresse Solana de l'administrateur
+
+1. Créez un fichier `.env.local` à la racine du projet
+2. Ajoutez la variable d'environnement suivante :
+```env
+NEXT_PUBLIC_ADMIN_WALLET_ADDRESS=votre_adresse_devnet_phantom
+```
+
+Remplacez `votre_adresse_devnet_phantom` par votre adresse Solana au format Base58 (par exemple : `5ZWj7a1f8tWkjBESHKgrLmXshuXxqeY9SYcfbshpAqPG`).
+
+### Vérification de la configuration
+
+1. Assurez-vous que le fichier `.env.local` est bien créé
+2. Vérifiez que l'adresse est correctement formatée
+3. Redémarrez le serveur de développement si nécessaire
+
+## Installation
+
+```bash
+npm install
+```
+
+## Développement
+
+```bash
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Démarrage en production
+
+```bash
+npm start
+```
+
+## Technologies utilisées
+
+- Next.js
+- Solana
+- Anchor
+- TypeScript
+- TailwindCSS
 
 ## Fonctionnalités
 
@@ -8,26 +58,6 @@ Programme de gestion des présences sur Solana développé avec Anchor.
 - Création de sessions
 - Enregistrement des présences
 - Validation des présences
-
-## Installation
-
-```bash
-git clone https://github.com/AinzOoalGown2020/AlyraSign.git
-cd alyrasign
-yarn install
-```
-
-## Build
-
-```bash
-anchor build
-```
-
-## Test
-
-```bash
-anchor test
-```
 
 ## Structure du Programme
 
