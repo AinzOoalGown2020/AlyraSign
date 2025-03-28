@@ -52,44 +52,23 @@ Le programme contient quatre instructions principales :
 - Node.js
 - Yarn
 
-## Déploiement sur Vercel
-
-1. Créer un nouveau projet sur Vercel :
-- Aller sur [Vercel](https://vercel.com)
-- Cliquer sur "New Project"
-- Importer le repository GitHub
-
-2. Configurer les variables d'environnement sur Vercel :
-- `NEXT_PUBLIC_SOLANA_RPC_URL`: URL du réseau Solana (devnet/mainnet)
-- `NEXT_PUBLIC_PROGRAM_ID`: ID du programme Solana déployé
-
-3. Déployer :
-- Cliquer sur "Deploy"
-
 ## Structure du Projet
 
 ```
 alyra-sign/
-├── anchor/                 # Programme Solana
-│   └── programs/
-│       └── alyra-sign/    # Code du programme
-├── src/
-│   └── app/               # Application Next.js
-│       ├── components/    # Composants React
-│       ├── hooks/        # Hooks personnalisés
-│       ├── services/     # Services (Solana, etc.)
-│       └── pages/        # Pages de l'application
-├── public/               # Fichiers statiques
-└── package.json         # Dépendances et scripts
+├── programs/
+│   └── alyrasign/        # Programme Solana
+│       └── src/         # Code source du programme
+├── tests/               # Tests du programme
+└── Anchor.toml         # Configuration Anchor
 ```
 
 ## Technologies Utilisées
 
-- Next.js
 - Solana
 - Anchor Framework
-- TypeScript
-- Tailwind CSS
+- Rust
+
 ## Licence
 
 MIT
