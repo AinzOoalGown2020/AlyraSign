@@ -1,6 +1,48 @@
-# AlyraSign - Application de Gestion des Présences
+# AlyraSign
 
-Application de gestion des présences pour les étudiants utilisant Solana et Next.js.
+Programme de gestion des présences sur Solana développé avec Anchor.
+
+## Fonctionnalités
+
+- Création de formations
+- Création de sessions
+- Enregistrement des présences
+- Validation des présences
+
+## Installation
+
+```bash
+git clone <your-repo-url>
+cd alyrasign
+yarn install
+```
+
+## Build
+
+```bash
+anchor build
+```
+
+## Test
+
+```bash
+anchor test
+```
+
+## Structure du Programme
+
+Le programme contient quatre instructions principales :
+
+1. `create_formation` - Créer une nouvelle formation
+2. `create_session` - Créer une nouvelle session pour une formation
+3. `register_presence` - Enregistrer la présence d'un étudiant
+4. `validate_presence` - Valider la présence d'un étudiant
+
+## Comptes
+
+- `Formation` - Stocke les informations sur une formation
+- `Session` - Stocke les informations sur une session
+- `Presence` - Stocke les informations sur la présence d'un étudiant
 
 ## Prérequis
 
@@ -8,34 +50,6 @@ Application de gestion des présences pour les étudiants utilisant Solana et Ne
 - Solana CLI
 - Anchor Framework
 - Compte Vercel
-
-## Installation
-
-1. Cloner le repository :
-```bash
-git clone [URL_DU_REPO]
-cd alyra-sign
-```
-
-2. Installer les dépendances :
-```bash
-npm install
-```
-
-3. Configurer les variables d'environnement :
-- Copier `.env.local.example` vers `.env.local`
-- Mettre à jour les variables avec vos valeurs
-
-4. Déployer le programme Solana :
-```bash
-cd anchor
-anchor build
-anchor deploy
-```
-
-5. Mettre à jour le PROGRAM_ID :
-- Copier le PROGRAM_ID généré après le déploiement
-- Mettre à jour la variable `NEXT_PUBLIC_PROGRAM_ID` dans `.env.local`
 
 ## Déploiement sur Vercel
 
@@ -68,14 +82,6 @@ alyra-sign/
 └── package.json         # Dépendances et scripts
 ```
 
-## Fonctionnalités
-
-- Création et gestion des formations
-- Création et gestion des sessions
-- Signature électronique des présences
-- Validation des signatures par les administrateurs
-- Interface utilisateur intuitive
-
 ## Technologies Utilisées
 
 - Next.js
@@ -83,7 +89,7 @@ alyra-sign/
 - Anchor Framework
 - TypeScript
 - Tailwind CSS
-
 ## Licence
 
 MIT
+
