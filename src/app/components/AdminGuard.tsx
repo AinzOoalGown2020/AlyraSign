@@ -34,7 +34,7 @@ export const AdminGuard: FC<AdminGuardProps> = ({ children }) => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold mb-8">Accès Non Autorisé</h1>
-        <p className="text-gray-600 mb-4">Vous n&apos;avez pas les droits d&apos;accès nécessaires pour accéder à cette page.</p>
+        <p className="text-gray-600 mb-4">Vous n&apos;avez pas les droits d&apos;administrateur.</p>
         <button
           onClick={() => router.push('/student')}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
