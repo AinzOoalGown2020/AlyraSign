@@ -8,17 +8,11 @@ import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
 import { Provider } from 'react-redux'
 import { store } from './store'
-import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { WalletContextProvider } from './context/WalletContextProvider'
 import Navigation from './components/Navigation'
 
 const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'AlyraSign - Gestion des Présences',
-  description: 'Application de gestion des présences pour les étudiants',
-}
 
 export default function RootLayout({
   children,

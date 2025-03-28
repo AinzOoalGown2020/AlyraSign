@@ -10,6 +10,12 @@ const nextConfig = {
     };
     return config;
   },
+  output: 'standalone',
+  experimental: {
+    outputFileTracingIncludes: {
+      '/**/*': ['./anchor/target/idl/votee.json'],
+    },
+  },
 }
 
 module.exports = nextConfig 
