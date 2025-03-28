@@ -5,22 +5,68 @@ import {
   SystemProgram,
   TransactionSignature,
 } from '@solana/web3.js'
-import idl from '../../../anchor/target/idl/votee.json'
-import { Votee } from '../../../anchor/target/types/votee'
 import { Candidate, Poll } from '../utils/interfaces'
 import { store } from '../store'
 import { globalActions } from '../store/globalSlices'
 
 let tx
-const programId = new PublicKey(idl.address)
+const programId = new PublicKey('votee1111111111111111111111111111111111111111111') // Remplacez par votre programId
 const { setCandidates, setPoll } = globalActions
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8899'
+
+// IDL minimal pour le développement
+const minimalIdl = {
+  "version": "0.1.0",
+  "name": "votee",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "counter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registerations",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "counter",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "count",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 export const getProvider = (
   publicKey: PublicKey | null,
   signTransaction: any,
   sendTransaction: any
-): Program<Votee> | null => {
+): Program | null => {
   if (!publicKey || !signTransaction) {
     console.error('Wallet not connected or missing signTransaction.')
     return null
@@ -33,10 +79,10 @@ export const getProvider = (
     { commitment: 'processed' }
   )
 
-  return new Program<Votee>(idl as any, provider)
+  return new Program(minimalIdl as any, programId, provider)
 }
 
-export const getReadonlyProvider = (): Program<Votee> => {
+export const getReadonlyProvider = (): Program => {
   const connection = new Connection(RPC_URL, 'confirmed')
 
   // Use a dummy wallet for read-only operations
@@ -54,10 +100,10 @@ export const getReadonlyProvider = (): Program<Votee> => {
     commitment: 'processed',
   })
 
-  return new Program<Votee>(idl as any, provider)
+  return new Program(minimalIdl as any, programId, provider)
 }
 
-export const getCounter = async (program: Program<Votee>): Promise<BN> => {
+export const getCounter = async (program: Program): Promise<BN> => {
   try {
     const [counterPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from('counter')],
@@ -79,7 +125,7 @@ export const getCounter = async (program: Program<Votee>): Promise<BN> => {
 }
 
 export const initialize = async (
-  program: Program<Votee>,
+  program: Program,
   publicKey: PublicKey
 ): Promise<TransactionSignature> => {
   const [counterPDA] = PublicKey.findProgramAddressSync(
@@ -111,7 +157,7 @@ export const initialize = async (
 }
 
 export const createPoll = async (
-  program: Program<Votee>,
+  program: Program,
   publicKey: PublicKey,
   nextCount: BN,
   description: string,
@@ -150,7 +196,7 @@ export const createPoll = async (
 }
 
 export const registerCandidate = async (
-  program: Program<Votee>,
+  program: Program,
   publicKey: PublicKey,
   pollId: number,
   name: string
@@ -194,24 +240,15 @@ export const registerCandidate = async (
 }
 
 export const vote = async (
-  program: Program<Votee>,
+  program: Program,
   publicKey: PublicKey,
   pollId: number,
   candidateId: number
 ): Promise<TransactionSignature> => {
   const PID = new BN(pollId)
   const CID = new BN(candidateId)
-
   const [pollPda] = PublicKey.findProgramAddressSync(
     [PID.toArrayLike(Buffer, 'le', 8)],
-    programId
-  )
-  const [voterPDA] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('voter'),
-      PID.toArrayLike(Buffer, 'le', 8),
-      publicKey.toBuffer(),
-    ],
     programId
   )
   const [candidatePda] = PublicKey.findProgramAddressSync(
@@ -225,8 +262,6 @@ export const vote = async (
       user: publicKey,
       poll: pollPda,
       candidate: candidatePda,
-      voter: voterPDA,
-      systemProgram: SystemProgram.programId,
     })
     .rpc()
 
@@ -239,96 +274,65 @@ export const vote = async (
   return tx
 }
 
-export const fetchAllPolls = async (
-  program: Program<Votee>
-): Promise<Poll[]> => {
+export const fetchAllPolls = async (program: Program): Promise<Poll[]> => {
   const polls = await program.account.poll.all()
   return serializedPoll(polls)
 }
 
 export const fetchPollDetails = async (
-  program: Program<Votee>,
+  program: Program,
   pollAddress: string
 ): Promise<Poll> => {
-  const poll = await program.account.poll.fetch(pollAddress)
-
-  const serialized: Poll = {
-    ...poll,
-    publicKey: pollAddress,
-    id: poll.id.toNumber(),
-    start: poll.start.toNumber() * 1000,
-    end: poll.end.toNumber() * 1000,
-    candidates: poll.candidates.toNumber(),
-  }
-
-  store.dispatch(setPoll(serialized))
-  return serialized
+  const poll = await program.account.poll.fetch(new PublicKey(pollAddress))
+  return serializedPoll([poll])[0]
 }
 
 const serializedPoll = (polls: any[]): Poll[] =>
-  polls.map((c: any) => ({
-    ...c.account,
-    publicKey: c.publicKey.toBase58(),
-    id: c.account.id.toNumber(),
-    start: c.account.start.toNumber() * 1000,
-    end: c.account.end.toNumber() * 1000,
-    candidates: c.account.candidates.toNumber(),
+  polls.map((poll: any) => ({
+    publicKey: poll.publicKey.toBase58(),
+    id: poll.account.id.toNumber(),
+    description: poll.account.description,
+    start: poll.account.start.toNumber() * 1000,
+    end: poll.account.end.toNumber() * 1000,
+    candidates: poll.account.candidates.toNumber(),
   }))
 
 export const fetchAllCandidates = async (
-  program: Program<Votee>,
+  program: Program,
   pollAddress: string
 ): Promise<Candidate[]> => {
-  const pollData = await fetchPollDetails(program, pollAddress)
-  if (!pollData) return []
-
-  const PID = new BN(pollData.id)
-
-  const candidateAccounts = await program.account.candidate.all()
-  const candidates = candidateAccounts.filter((candidate) => {
-    // Assuming the candidate account has a field `pollId` or equivalent
-    return candidate.account.pollId.eq(PID)
-  })
-
-  store.dispatch(setCandidates(serializedCandidates(candidates)))
-  return candidates as unknown as Candidate[]
+  const candidates = await program.account.candidate.all([
+    {
+      memcmp: {
+        offset: 0,
+        bytes: new PublicKey(pollAddress).toBase58(),
+      },
+    },
+  ])
+  return serializedCandidates(candidates)
 }
 
 const serializedCandidates = (candidates: any[]): Candidate[] =>
-  candidates.map((c: any) => ({
-    ...c.account,
-    publicKey: c.publicKey.toBase58(), // Convert to string
-    cid: c.account.cid.toNumber(),
-    pollId: c.account.pollId.toNumber(),
-    votes: c.account.votes.toNumber(),
-    name: c.account.name,
+  candidates.map((candidate: any) => ({
+    publicKey: candidate.publicKey.toBase58(),
+    cid: candidate.account.cid.toNumber(),
+    pollId: candidate.account.pollId.toNumber(),
+    name: candidate.account.name,
+    votes: candidate.account.votes.toNumber(),
+    hasRegistered: candidate.account.hasRegistered,
   }))
 
 export const hasUserVoted = async (
-  program: Program<Votee>,
+  program: Program,
   publicKey: PublicKey,
   pollId: number
 ): Promise<boolean> => {
   const PID = new BN(pollId)
-
-  const [voterPda] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('voter'),
-      PID.toArrayLike(Buffer, 'le', 8),
-      publicKey.toBuffer(),
-    ],
+  const [pollPda] = PublicKey.findProgramAddressSync(
+    [PID.toArrayLike(Buffer, 'le', 8)],
     programId
   )
 
-  try {
-    const voterAccount = await program.account.voter.fetch(voterPda)
-    if (!voterAccount || !voterAccount.hasVoted) {
-      return false // Default value if no account exists or hasn't voted
-    }
-
-    return true
-  } catch (error) {
-    console.error('Error fetching voter account:', error)
-    return false
-  }
+  const poll = await program.account.poll.fetch(pollPda)
+  return poll.voters.includes(publicKey)
 }

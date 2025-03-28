@@ -1,5 +1,3 @@
-'use client'
-
 import './globals.css'
 import AppWalletProvider from './components/AppWalletProvider'
 import { ReactQueryProvider } from './react-query-provider'
