@@ -7,14 +7,21 @@ const nextConfig = {
       fs: false,
       net: false,
       tls: false,
+      crypto: false,
+      stream: false,
+      path: false,
+      os: false,
+      zlib: false,
+      http: false,
+      https: false,
+      buffer: false,
+      process: false,
     };
     return config;
   },
   output: 'standalone',
   experimental: {
-    outputFileTracingIncludes: {
-      '/**/*': ['./anchor/target/idl/votee.json'],
-    },
+    serverComponentsExternalPackages: ['@coral-xyz/anchor'],
   },
 }
 
