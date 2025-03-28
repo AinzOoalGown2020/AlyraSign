@@ -3,60 +3,51 @@
 import { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { validateSignature, saveSignature, SignatureData } from '../services/signature.service';
+import type { SignatureValidation } from '../services/signature.service';
 import Image from 'next/image'
+import { config } from '@/config/param.config'
+import { Connection } from '@solana/web3.js';
+import { program } from '../services/program.service';
 
 interface SignatureValidationProps {
   signature: string;
   studentId: string;
   sessionId: string;
-  onValidationComplete: (success: boolean) => void;
+  timestamp: string;
 }
 
 export default function SignatureValidation({
   signature,
   studentId,
   sessionId,
-  onValidationComplete,
+  timestamp,
 }: SignatureValidationProps) {
   const { publicKey } = useWallet();
   const [isValidating, setIsValidating] = useState(false);
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [validationResult, setValidationResult] = useState<boolean | null>(null);
 
   const handleValidate = async () => {
     if (!publicKey) return;
 
     setIsValidating(true);
-    setValidationMessage(null);
-
     try {
-      // Valider la signature
       const validation = validateSignature(signature, studentId, sessionId);
-      
+      setValidationResult(validation.isValid);
+
       if (validation.isValid) {
-        // Sauvegarder la signature
         const signatureData: SignatureData = {
           signature,
           studentId,
           sessionId,
-          timestamp: new Date().toISOString(),
+          timestamp,
+          nom: '', // À remplir avec les données de l'étudiant
+          prenom: '', // À remplir avec les données de l'étudiant
         };
-
-        const saved = await saveSignature(signatureData, publicKey);
-        
-        if (saved) {
-          setValidationMessage('Signature validée et enregistrée avec succès');
-          onValidationComplete(true);
-        } else {
-          setValidationMessage('Erreur lors de l\'enregistrement de la signature');
-          onValidationComplete(false);
-        }
-      } else {
-        setValidationMessage(validation.message);
-        onValidationComplete(false);
+        await saveSignature(signatureData, publicKey, new Connection(config.solana.rpcUrl), program);
       }
     } catch (error) {
-      setValidationMessage('Une erreur est survenue lors de la validation');
-      onValidationComplete(false);
+      console.error('Erreur lors de la validation:', error);
+      setValidationResult(false);
     } finally {
       setIsValidating(false);
     }
@@ -74,31 +65,35 @@ export default function SignatureValidation({
         />
       </div>
 
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-sm text-gray-600">ID Étudiant: {studentId}</p>
+          <p className="text-sm text-gray-600">Session: {sessionId}</p>
+          <p className="text-sm text-gray-600">Date: {timestamp}</p>
+        </div>
+
         <button
           onClick={handleValidate}
-          disabled={isValidating}
-          className={`px-4 py-2 rounded-lg text-white ${
+          disabled={isValidating || !publicKey}
+          className={`px-4 py-2 rounded ${
             isValidating
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-green-500 hover:bg-green-600'
-          }`}
+              ? 'bg-gray-400'
+              : validationResult === true
+              ? 'bg-green-500'
+              : validationResult === false
+              ? 'bg-red-500'
+              : 'bg-blue-500'
+          } text-white hover:opacity-90 transition-opacity`}
         >
-          {isValidating ? 'Validation en cours...' : 'Valider la Signature'}
+          {isValidating
+            ? 'Validation en cours...'
+            : validationResult === true
+            ? 'Signature Validée'
+            : validationResult === false
+            ? 'Signature Invalide'
+            : 'Valider la Signature'}
         </button>
       </div>
-
-      {validationMessage && (
-        <div
-          className={`p-4 rounded-lg ${
-            validationMessage.includes('succès')
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}
-        >
-          {validationMessage}
-        </div>
-      )}
     </div>
   );
 } 

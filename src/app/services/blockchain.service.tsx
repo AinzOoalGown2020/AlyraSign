@@ -8,11 +8,12 @@ import {
 import { Candidate, Poll } from '../utils/interfaces'
 import { store } from '../store'
 import { globalActions } from '../store/globalSlices'
+import { config } from '@/config/param.config'
 
 let tx
-const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || 'FfEV5JPvSqajhtHQj2jUGvYz6GGNYkkMkHNhhE3rWqNp')
+const programId = new PublicKey(config.solana.programId)
 const { setCandidates, setPoll } = globalActions
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8899'
+const RPC_URL = config.solana.rpcUrl
 
 // IDL minimal pour le développement
 const minimalIdl = {

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 import { AdminGuard } from '../components/AdminGuard';
 import CreateFormationForm from '../components/CreateFormationForm';
+import { storageService } from '../services/storage.service';
 
 interface Formation {
   id: string;
@@ -29,18 +30,28 @@ export default function AdminPage() {
   const [formations, setFormations] = useState<Formation[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
+  useEffect(() => {
+    // Charger les formations au montage du composant
+    const loadedFormations = storageService.getFormations();
+    setFormations(loadedFormations);
+  }, []);
+
   const handleCreateFormation = (formation: {
     nom: string;
     description: string;
     dateDebut: string;
     dateFin: string;
   }) => {
-    // TODO: Implémenter la création de formation sur Solana
     const newFormation: Formation = {
-      id: Date.now().toString(), // Temporaire, à remplacer par l'ID Solana
+      id: Date.now().toString(),
       ...formation,
       sessions: [],
     };
+    
+    // Sauvegarder la formation
+    storageService.saveFormation(newFormation);
+    
+    // Mettre à jour l'état local
     setFormations([...formations, newFormation]);
     setShowCreateForm(false);
   };

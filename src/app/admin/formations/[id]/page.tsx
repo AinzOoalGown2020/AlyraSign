@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { AdminGuard } from '../../../components/AdminGuard';
 import CreateSessionForm from '../../../components/CreateSessionForm';
+import { storageService } from '../../../services/storage.service';
 
 interface Session {
   id: string;
@@ -21,17 +22,30 @@ export default function FormationSessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [showCreateSession, setShowCreateSession] = useState(false);
 
+  useEffect(() => {
+    // Charger les sessions au montage du composant
+    const loadedSessions = storageService.getSessions(id as string);
+    setSessions(loadedSessions);
+  }, [id]);
+
   const handleCreateSession = (session: {
     nom: string;
     date: string;
     heureDebut: string;
     heureFin: string;
   }) => {
-    // TODO: Implémenter la création de session sur Solana
     const newSession: Session = {
-      id: Date.now().toString(), // Temporaire, à remplacer par l'ID Solana
+      id: Date.now().toString(),
       ...session,
     };
+
+    // Sauvegarder la session
+    storageService.saveSession({
+      ...newSession,
+      formationId: id as string,
+    });
+
+    // Mettre à jour l'état local
     setSessions([...sessions, newSession]);
     setShowCreateSession(false);
   };

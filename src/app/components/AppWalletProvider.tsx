@@ -12,6 +12,7 @@ import {
   SolflareWalletAdapter,
   PhantomWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
+import { config } from '@/config/param.config'
 
 // Default styles that can be overridden by your app
 require('@solana/wallet-adapter-react-ui/styles.css')
@@ -21,7 +22,7 @@ export default function AppWalletProvider({
 }: {
   children: React.ReactNode
 }) {
-  const network = WalletAdapterNetwork.Devnet
+  const network = config.solana.network as WalletAdapterNetwork
   const endpoint = useMemo(() => clusterApiUrl(network), [])
 
   const wallets = useMemo(() => [
@@ -32,7 +33,9 @@ export default function AppWalletProvider({
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
+        <WalletModalProvider>
+          {children}
+        </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   )
