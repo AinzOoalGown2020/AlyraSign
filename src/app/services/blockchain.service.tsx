@@ -10,7 +10,7 @@ import { store } from '../store'
 import { globalActions } from '../store/globalSlices'
 
 let tx
-const programId = new PublicKey('votee1111111111111111111111111111111111111111111') // Remplacez par votre programId
+const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || 'FfEV5JPvSqajhtHQj2jUGvYz6GGNYkkMkHNhhE3rWqNp')
 const { setCandidates, setPoll } = globalActions
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8899'
 
