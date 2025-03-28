@@ -12,7 +12,7 @@ Programme de gestion des présences sur Solana développé avec Anchor.
 ## Installation
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/AinzOoalGown2020/AlyraSign.git
 cd alyrasign
 yarn install
 ```
@@ -46,10 +46,11 @@ Le programme contient quatre instructions principales :
 
 ## Prérequis
 
-- Node.js 16.x ou supérieur
+- Rust
 - Solana CLI
 - Anchor Framework
-- Compte Vercel
+- Node.js
+- Yarn
 
 ## Déploiement sur Vercel
 
