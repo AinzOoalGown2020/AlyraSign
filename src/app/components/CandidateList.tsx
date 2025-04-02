@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { Candidate } from '../utils/interfaces'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
@@ -22,16 +22,18 @@ const CandidateList = ({ candidates, pollAddress, pollId }: Props) => {
     () => getProvider(publicKey, signTransaction, sendTransaction),
     [publicKey, signTransaction, sendTransaction]
   )
-  const fetchVotingStatus = async () => {
-    const status = await hasUserVoted(program!, publicKey!, pollId)
+
+  const fetchVotingStatus = useCallback(async () => {
+    if (!program || !publicKey) return
+    const status = await hasUserVoted(program, publicKey, pollId)
     setVoted(status)
-  }
+  }, [program, publicKey, pollId])
 
   useEffect(() => {
     if (!program || !publicKey) return
 
     fetchVotingStatus()
-  }, [program, publicKey, candidates])
+  }, [program, publicKey, candidates, fetchVotingStatus])
 
   const handleVote = async (candidate: Candidate) => {
     if (!program || !publicKey || voted) return

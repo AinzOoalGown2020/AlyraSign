@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("FfEV5JPvSqajhtHQj2jUGvYz6GGNYkkMkHNhhE3rWqNp");
+declare_id!("5efYRoL5mJVBmnJCwTtEmtErLyMSAjjh3BW3ra2quKCP");
 
 #[program]
 pub mod alyrasign {
@@ -50,6 +50,20 @@ pub mod alyrasign {
             AlyraSignError::UnauthorizedValidation
         );
         presence.is_validated = true;
+        Ok(())
+    }
+
+    pub fn create_student_group(
+        ctx: Context<CreateStudentGroup>,
+        name: String,
+        students: Vec<String>,
+        formations: Vec<String>,
+    ) -> Result<()> {
+        let group = &mut ctx.accounts.group;
+        group.name = name;
+        group.students = students;
+        group.formations = formations;
+        group.authority = ctx.accounts.authority.key();
         Ok(())
     }
 }
@@ -103,6 +117,19 @@ pub struct ValidatePresence<'info> {
     pub authority: Signer<'info>,
 }
 
+#[derive(Accounts)]
+pub struct CreateStudentGroup<'info> {
+    #[account(
+        init,
+        payer = authority,
+        space = 8 + 32 + 100 + 1000 + 1000 // discriminator + authority + name + students + formations
+    )]
+    pub group: Account<'info, StudentGroup>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 #[account]
 pub struct Formation {
     pub authority: Pubkey,
@@ -124,6 +151,14 @@ pub struct Presence {
     pub student: Pubkey,
     pub timestamp: i64,
     pub is_validated: bool,
+}
+
+#[account]
+pub struct StudentGroup {
+    pub authority: Pubkey,
+    pub name: String,
+    pub students: Vec<String>,
+    pub formations: Vec<String>,
 }
 
 #[error_code]

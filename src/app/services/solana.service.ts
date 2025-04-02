@@ -156,7 +156,21 @@ export const getFormation = async (
 ): Promise<FormationData | null> => {
   try {
     const formation = await program.account.formation.fetch(formationId);
-    return formation as FormationData;
+    const formationData = formation as unknown as {
+      name: string;
+      description: string;
+      authority: PublicKey;
+    };
+    
+    return {
+      id: formationId,
+      nom: formationData.name,
+      description: formationData.description,
+      dateDebut: new Date().toISOString(),
+      dateFin: new Date().toISOString(),
+      admin: formationData.authority,
+      sessions: []
+    };
   } catch (error) {
     console.error('Erreur lors de la récupération de la formation:', error);
     return null;
@@ -171,7 +185,22 @@ export const getSession = async (
 ): Promise<SessionData | null> => {
   try {
     const session = await program.account.session.fetch(sessionId);
-    return session as SessionData;
+    const sessionData = session as unknown as {
+      formation: PublicKey;
+      date: string;
+      description: string;
+      authority: PublicKey;
+    };
+    
+    return {
+      id: sessionId,
+      formationId: sessionData.formation,
+      nom: sessionData.description,
+      date: new Date(Number(sessionData.date) * 1000).toISOString(),
+      heureDebut: '09:00', // À adapter selon vos besoins
+      heureFin: '17:00', // À adapter selon vos besoins
+      presences: []
+    };
   } catch (error) {
     console.error('Erreur lors de la récupération de la session:', error);
     return null;
@@ -186,7 +215,23 @@ export const getPresence = async (
 ): Promise<PresenceData | null> => {
   try {
     const presence = await program.account.presence.fetch(presenceId);
-    return presence as PresenceData;
+    const presenceData = presence as unknown as {
+      session: PublicKey;
+      student: PublicKey;
+      timestamp: number;
+      isValidated: boolean;
+    };
+    
+    return {
+      id: presenceId,
+      sessionId: presenceData.session,
+      etudiantId: presenceData.student.toBase58(),
+      nom: '', // À remplir depuis une autre source
+      prenom: '', // À remplir depuis une autre source
+      signature: '', // À remplir depuis une autre source
+      timestamp: new Date(Number(presenceData.timestamp) * 1000).toISOString(),
+      isValidated: presenceData.isValidated
+    };
   } catch (error) {
     console.error('Erreur lors de la récupération de la présence:', error);
     return null;

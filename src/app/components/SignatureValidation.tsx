@@ -7,13 +7,14 @@ import type { SignatureValidation } from '../services/signature.service';
 import Image from 'next/image'
 import { config } from '@/config/param.config'
 import { Connection } from '@solana/web3.js';
-import { program } from '../services/program.service';
+import { program as programInstance } from '../services/program.service';
 
 interface SignatureValidationProps {
   signature: string;
   studentId: string;
   sessionId: string;
   timestamp: string;
+  onValidationComplete: (success: boolean) => void;
 }
 
 export default function SignatureValidation({
@@ -21,6 +22,7 @@ export default function SignatureValidation({
   studentId,
   sessionId,
   timestamp,
+  onValidationComplete,
 }: SignatureValidationProps) {
   const { publicKey } = useWallet();
   const [isValidating, setIsValidating] = useState(false);
@@ -43,11 +45,15 @@ export default function SignatureValidation({
           nom: '', // À remplir avec les données de l'étudiant
           prenom: '', // À remplir avec les données de l'étudiant
         };
-        await saveSignature(signatureData, publicKey, new Connection(config.solana.rpcUrl), program);
+        await saveSignature(signatureData, publicKey, new Connection(config.solana.rpcUrl), programInstance);
+        onValidationComplete(true);
+      } else {
+        onValidationComplete(false);
       }
     } catch (error) {
       console.error('Erreur lors de la validation:', error);
       setValidationResult(false);
+      onValidationComplete(false);
     } finally {
       setIsValidating(false);
     }

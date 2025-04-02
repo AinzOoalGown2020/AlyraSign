@@ -32,7 +32,7 @@ const Page: NextPage = () => {
       if (!program) return
       const count = await getCounter(program)
       setNextCount(count.add(new BN(1)))
-      setIsInitialized(count.gte(new BN(0)))
+      setIsInitialized(count.toNumber() >= 0)
     }
 
     fetchCounter()

@@ -182,6 +182,7 @@ export default function SessionPresencePage() {
               signature={selectedPresence.signature}
               studentId={selectedPresence.etudiantId}
               sessionId={sessionId as string}
+              timestamp={selectedPresence.timestamp}
               onValidationComplete={handleValidationComplete}
             />
           </div>

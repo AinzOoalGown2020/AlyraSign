@@ -1,5 +1,6 @@
-import { PublicKey } from '@solana/web3.js';
-import { Connection, Program } from '@project-serum/anchor';
+import { PublicKey, Connection } from '@solana/web3.js';
+import { Program } from '@coral-xyz/anchor';
+import { AlyraSign } from '../../idl/alyra_sign';
 import { registerPresence, validatePresence } from './solana.service';
 
 export interface SignatureValidation {
@@ -42,7 +43,7 @@ export const saveSignature = async (
   signatureData: SignatureData,
   adminPublicKey: PublicKey,
   connection: Connection,
-  program: Program
+  program: any
 ): Promise<boolean> => {
   try {
     // Enregistrer la présence sur Solana
@@ -56,6 +57,7 @@ export const saveSignature = async (
         signature: signatureData.signature,
         timestamp: signatureData.timestamp,
         sessionId: new PublicKey(signatureData.sessionId),
+        isValidated: false
       }
     );
 

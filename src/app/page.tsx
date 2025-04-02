@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   fetchAllPolls,
   getCounter,
@@ -15,6 +15,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { toast } from 'react-toastify'
 import { useRouter } from 'next/navigation'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { config } from '@/config/param.config'
 
 export default function Home() {
   const router = useRouter()
@@ -28,25 +29,25 @@ export default function Home() {
     [publicKey, signTransaction, sendTransaction]
   )
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     fetchAllPolls(programReadOnly).then((data) => setPolls(data as any))
     const count = await getCounter(programReadOnly)
-    setIsInitialized(count.gte(new BN(0)))
-  }
+    setIsInitialized(count.toNumber() >= 0)
+  }, [programReadOnly])
 
   useEffect(() => {
     if (!programReadOnly) return
     fetchData()
-  }, [programReadOnly])
+  }, [programReadOnly, fetchData])
 
   useEffect(() => {
     if (publicKey) {
-      router.push('/student')
+      const isAdmin = publicKey.toBase58() === config.solana.adminWalletAddress
+      router.push(isAdmin ? '/admin' : '/student')
     }
   }, [publicKey, router])
 
   const handleInit = async () => {
-    // alert(isInitialized && !!publicKey)
     if (isInitialized && !!publicKey) return
 
     await toast.promise(
