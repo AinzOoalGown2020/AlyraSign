@@ -1,6 +1,17 @@
 import { Program, AnchorProvider, BN } from '@coral-xyz/anchor'
-import { PublicKey, SystemProgram, Connection } from '@solana/web3.js'
+import { 
+  PublicKey, 
+  SystemProgram, 
+  Connection, 
+  TransactionInstruction, 
+  AccountMeta, 
+  Transaction,
+  VersionedTransaction,
+  TransactionMessage,
+  Keypair 
+} from '@solana/web3.js'
 import { config } from '@/config/param.config'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 export interface StudentGroup {
   name: string
@@ -27,13 +38,13 @@ export const createStudentGroup = async (
   admin: PublicKey,
   groupName: string,
   students: string[]
-) => {
-  if (!admin) {
-    throw new Error('Admin public key is required')
+): Promise<string> => {
+  if (!program.provider.wallet || !program.provider.wallet.publicKey) {
+    throw new Error('Wallet non initialisé')
   }
 
   const groupPda = getGroupPda(program.programId, groupName)
-  const connection = new Connection(config.solana.rpcUrl)
+  const connection = program.provider.connection
 
   try {
     console.log('Creating student group with params:', {
@@ -42,67 +53,61 @@ export const createStudentGroup = async (
       studentsCount: students.length,
       students: students,
       programId: program.programId.toBase58(),
-      groupPda: groupPda.toBase58(),
-      rpcUrl: config.solana.rpcUrl
+      groupPda: groupPda.toBase58()
     })
 
     // Vérifier le solde du compte admin
     const balance = await connection.getBalance(admin)
     console.log('Admin account balance:', balance / 1e9, 'SOL')
 
-    // Vérifier que le compte admin a assez de SOL (au moins 1 SOL)
+    // Vérifier que le compte admin a assez de SOL
     if (balance < 1e9) {
       throw new Error('Le compte admin doit avoir au moins 1 SOL')
     }
 
-    // Vérifier si le groupe existe déjà
-    try {
-      const existingGroup = await program.account.studentGroup.fetch(groupPda)
-      console.log('Group already exists:', existingGroup)
-      throw new Error('Un groupe avec ce nom existe déjà')
-    } catch (error: unknown) {
-      // Si l'erreur est "Account does not exist", c'est bon
-      if (error instanceof Error && !error.message.includes('Account does not exist')) {
-        throw error
-      }
-    }
+    console.log('Creating instruction...')
 
-    console.log('Creating transaction...')
-    const instruction = await program.methods
+    // Créer la transaction avec les bonnes options
+    const tx = await program.methods
       .createStudentGroup(groupName, students, [])
       .accounts({
-        admin,
+        authority: admin,
         group: groupPda,
         systemProgram: SystemProgram.programId,
       })
-      .instruction()
-
-    console.log('Instruction created:', {
-      programId: instruction.programId.toBase58(),
-      keys: instruction.keys.map(key => ({
-        pubkey: key.pubkey.toBase58(),
-        isSigner: key.isSigner,
-        isWritable: key.isWritable
-      })),
-      data: instruction.data.toString('base64')
-    })
-
-    const tx = await program.rpc.createStudentGroup(groupName, students, [], {
-      accounts: {
-        admin,
-        group: groupPda,
-        systemProgram: SystemProgram.programId,
-      }
-    })
+      .signers([]) // Ne pas ajouter de signers supplémentaires ici
+      .rpc({
+        commitment: 'confirmed',
+        skipPreflight: false, // Activer la simulation de transaction
+        preflightCommitment: 'processed'
+      })
 
     console.log('Transaction sent:', tx)
-    
+
     // Attendre la confirmation
-    const confirmation = await connection.confirmTransaction(tx, 'confirmed')
+    const latestBlockhash = await connection.getLatestBlockhash('confirmed')
+    const confirmation = await connection.confirmTransaction({
+      signature: tx,
+      ...latestBlockhash
+    }, 'confirmed')
+
+    if (confirmation.value.err) {
+      throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`)
+    }
+
     console.log('Transaction confirmed:', confirmation)
-    
+
+    // Vérifier que le groupe a été créé
+    try {
+      const newGroup = await program.account.studentGroup.fetch(groupPda)
+      console.log('New group created successfully:', newGroup)
+    } catch (error) {
+      console.error('Failed to fetch new group:', error)
+      throw new Error('Le groupe a été créé mais impossible de le vérifier')
+    }
+
     return tx
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error creating student group:', error)
     if (error instanceof Error) {
       console.error('Error message:', error.message)

@@ -5,7 +5,7 @@ import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl, Connection } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { config } from '@/config/param.config';
 
 // Import des styles du wallet adapter
@@ -15,17 +15,14 @@ interface Props {
   children: ReactNode;
 }
 
-type NetworkType = WalletAdapterNetwork | 'localnet';
+type NetworkType = WalletAdapterNetwork;
 
 export const WalletContextProvider: FC<Props> = ({ children }) => {
   const network = config.solana.network as NetworkType;
   
   const endpoint = useMemo(() => {
-    if (network === 'localnet') {
-      return config.solana.rpcUrl;
-    }
-    return clusterApiUrl(network as WalletAdapterNetwork);
-  }, [network]);
+    return config.solana.rpcUrl;
+  }, []);
   
   const wallets = useMemo(
     () => [

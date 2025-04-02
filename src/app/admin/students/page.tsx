@@ -11,10 +11,11 @@ import {
   getAllStudentGroups,
   StudentGroup
 } from '@/app/services/student.service'
+import { AnchorProvider, Program } from '@coral-xyz/anchor'
 
 export default function StudentsManagement() {
   const router = useRouter()
-  const { publicKey, signTransaction, sendTransaction } = useWallet()
+  const { publicKey, signTransaction, sendTransaction, connected } = useWallet()
   const [groups, setGroups] = useState<StudentGroup[]>([])
   const [currentGroup, setCurrentGroup] = useState<StudentGroup>({
     name: '',
@@ -24,8 +25,19 @@ export default function StudentsManagement() {
   const [isLoading, setIsLoading] = useState(false)
 
   const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
+    () => {
+      if (!connected || !publicKey || !signTransaction || !sendTransaction) {
+        console.log('Wallet not fully connected:', {
+          connected,
+          hasPublicKey: !!publicKey,
+          hasSignTransaction: !!signTransaction,
+          hasSendTransaction: !!sendTransaction
+        })
+        return null
+      }
+      return getProvider(publicKey, signTransaction, sendTransaction)
+    },
+    [connected, publicKey, signTransaction, sendTransaction]
   )
 
   const isValidSolanaAddress = useCallback((address: string): boolean => {
@@ -96,16 +108,50 @@ export default function StudentsManagement() {
       return
     }
 
+    if (!connected) {
+      toast.error('Veuillez connecter votre wallet')
+      return
+    }
+
+    if (!signTransaction || !sendTransaction) {
+      toast.error('Erreur de configuration du wallet')
+      return
+    }
+
     setIsLoading(true)
     try {
       console.log('Starting group creation process...')
       console.log('Current group data:', currentGroup)
+      console.log('Wallet state:', {
+        connected,
+        publicKey: publicKey.toBase58(),
+        hasSignTransaction: !!signTransaction,
+        hasSendTransaction: !!sendTransaction
+      })
       
       const invalidAddresses = currentGroup.students.filter(addr => !isValidSolanaAddress(addr))
       if (invalidAddresses.length > 0) {
         toast.error(`Adresses invalides trouvées: ${invalidAddresses.join(', ')}`)
         return
       }
+
+      // Vérifier que l'utilisateur est bien l'admin
+      if (publicKey.toBase58() !== config.solana.adminWalletAddress) {
+        toast.error('Vous n&apos;êtes pas autorisé à créer des groupes')
+        return
+      }
+
+      // Vérifier que le wallet est correctement initialisé
+      if (!program.provider || !program.provider.wallet) {
+        toast.error('Le wallet n\'est pas correctement initialisé')
+        return
+      }
+
+      console.log('Provider wallet:', {
+        publicKey: program.provider.wallet.publicKey.toBase58(),
+        hasSignTransaction: !!program.provider.wallet.signTransaction,
+        hasSignAllTransactions: !!program.provider.wallet.signAllTransactions
+      })
 
       await toast.promise(
         createStudentGroup(program, publicKey, currentGroup.name, currentGroup.students),
@@ -133,7 +179,7 @@ export default function StudentsManagement() {
     } finally {
       setIsLoading(false)
     }
-  }, [currentGroup, program, publicKey, isValidSolanaAddress])
+  }, [currentGroup, program, publicKey, connected, signTransaction, sendTransaction, isValidSolanaAddress])
 
   const handleRemoveStudent = useCallback((index: number) => {
     setCurrentGroup(prev => ({
@@ -224,22 +270,43 @@ export default function StudentsManagement() {
 
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Groupes existants</h2>
-        <div className="space-y-4">
-          {groups.map((group, index) => (
-            <div key={index} className="border rounded p-4">
-              <h3 className="font-semibold mb-2">{group.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">
-                {group.students.length} étudiants
-              </p>
-              <div className="space-y-1">
-                {group.students.map((student, studentIndex) => (
-                  <div key={studentIndex} className="font-mono text-sm">
-                    {student}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nom du groupe
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre d'étudiants
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Étudiants
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {groups.map((group, index) => (
+                <tr key={index}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {group.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {group.students.length}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="max-h-40 overflow-y-auto">
+                      {group.students.map((student, studentIndex) => (
+                        <div key={studentIndex} className="font-mono text-sm mb-1">
+                          {student}
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

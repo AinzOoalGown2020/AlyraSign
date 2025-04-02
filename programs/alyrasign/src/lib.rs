@@ -122,7 +122,7 @@ pub struct CreateStudentGroup<'info> {
     #[account(
         init,
         payer = authority,
-        space = 8 + 32 + 100 + 1000 + 1000 // discriminator + authority + name + students + formations
+        space = 8 + 32 + 100 + 4000 + 4000 // discriminator + authority + name + students + formations
     )]
     pub group: Account<'info, StudentGroup>,
     #[account(mut)]

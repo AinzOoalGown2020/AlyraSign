@@ -1,12 +1,7 @@
 import './utils/polyfills'
 import './globals.css'
-import AppWalletProvider from './components/AppWalletProvider'
-import { ReactQueryProvider } from './react-query-provider'
-import Header from './components/Header'
-import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
-import { Provider } from 'react-redux'
-import { store } from './store'
+import 'react-toastify/dist/ReactToastify.css'
 import { Inter } from 'next/font/google'
 import { WalletContextProvider } from './context/WalletContextProvider'
 import Navigation from './components/Navigation'
@@ -29,6 +24,7 @@ export default function RootLayout({
           <main className="min-h-screen bg-gray-50">
             {children}
           </main>
+          <ToastContainer position="bottom-center" />
         </WalletContextProvider>
       </body>
     </html>

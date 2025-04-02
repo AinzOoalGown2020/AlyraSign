@@ -1,10 +1,10 @@
 export const config = {
   // Configuration Solana
   solana: {
-    rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'http://127.0.0.1:8899',
+    rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
     programId: process.env.NEXT_PUBLIC_PROGRAM_ID || '5efYRoL5mJVBmnJCwTtEmtErLyMSAjjh3BW3ra2quKCP',
     adminWalletAddress: process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || '79ziyYSUHVNENrJVinuotWZQ2TX7n44vSeo1cgxFPzSy',
-    network: process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'localnet', // 'localnet', 'devnet', 'mainnet-beta'
+    network: process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet', // 'devnet', 'mainnet-beta'
     commitment: process.env.NEXT_PUBLIC_SOLANA_COMMITMENT || 'confirmed', // 'processed', 'confirmed', 'finalized'
   },
 

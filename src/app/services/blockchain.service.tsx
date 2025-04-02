@@ -4,6 +4,10 @@ import {
   PublicKey,
   SystemProgram,
   TransactionSignature,
+  Transaction,
+  SendOptions,
+  Keypair,
+  VersionedTransaction,
 } from '@solana/web3.js'
 import { Candidate, Poll } from '../utils/interfaces'
 import { store } from '../store'
@@ -18,39 +22,13 @@ const RPC_URL = config.solana.rpcUrl
 // IDL minimal pour le développement
 const minimalIdl = {
   "version": "0.1.0",
-  "name": "votee",
+  "name": "alyrasign",
   "instructions": [
-    {
-      "name": "initialize",
-      "accounts": [
-        {
-          "name": "user",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "counter",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "registerations",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
     {
       "name": "createStudentGroup",
       "accounts": [
         {
-          "name": "admin",
+          "name": "authority",
           "isMut": true,
           "isSigner": true
         },
@@ -175,22 +153,14 @@ const minimalIdl = {
   ],
   "accounts": [
     {
-      "name": "counter",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "count",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "studentGroup",
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
           {
             "name": "name",
             "type": "string"
@@ -283,24 +253,111 @@ const minimalIdl = {
   ]
 }
 
+// Définir une interface personnalisée pour le wallet
+interface CustomWallet extends Wallet {
+  sendTransaction: (transaction: Transaction, connection: Connection, options?: SendOptions) => Promise<string>;
+}
+
 export const getProvider = (
   publicKey: PublicKey | null,
-  signTransaction: any,
-  sendTransaction: any
+  signTransaction: ((transaction: Transaction) => Promise<Transaction>) | undefined,
+  sendTransaction: ((transaction: Transaction, connection: Connection, options?: SendOptions) => Promise<string>) | undefined
 ): Program | null => {
-  if (!publicKey || !signTransaction) {
-    console.error('Wallet not connected or missing signTransaction.')
+  if (!publicKey || !signTransaction || !sendTransaction) {
+    console.log('Missing required wallet functions:', {
+      hasPublicKey: !!publicKey,
+      hasSignTransaction: !!signTransaction,
+      hasSendTransaction: !!sendTransaction
+    })
     return null
   }
 
-  const connection = new Connection(RPC_URL)
-  const provider = new AnchorProvider(
-    connection,
-    { publicKey, signTransaction, sendTransaction } as unknown as Wallet,
-    { commitment: 'processed' }
-  )
+  try {
+    const connection = new Connection(RPC_URL, {
+      commitment: 'confirmed',
+      confirmTransactionInitialTimeout: 120000
+    })
 
-  return new Program(minimalIdl as any, programId, provider)
+    // Créer un wallet personnalisé qui gère correctement les signatures
+    const wallet = {
+      publicKey,
+      signTransaction: async (tx: Transaction) => {
+        try {
+          if (!tx.feePayer) {
+            tx.feePayer = publicKey
+          }
+
+          // Vérifier si la transaction a déjà un blockhash récent
+          if (!tx.recentBlockhash) {
+            const { blockhash } = await connection.getLatestBlockhash('finalized')
+            tx.recentBlockhash = blockhash
+          }
+
+          // S'assurer que la transaction est correctement construite
+          if (!tx.verifySignatures()) {
+            console.log('Transaction verification failed before signing')
+          }
+
+          const signedTx = await signTransaction(tx)
+
+          // Vérifier la signature après
+          if (!signedTx.verifySignatures()) {
+            console.log('Transaction verification failed after signing')
+          }
+
+          return signedTx
+        } catch (error) {
+          console.error('Error in wallet.signTransaction:', error)
+          throw error
+        }
+      },
+      signAllTransactions: async (transactions: Transaction[]) => {
+        try {
+          const { blockhash } = await connection.getLatestBlockhash('finalized')
+          
+          const preparedTxs = transactions.map(tx => {
+            if (!tx.feePayer) {
+              tx.feePayer = publicKey
+            }
+            if (!tx.recentBlockhash) {
+              tx.recentBlockhash = blockhash
+            }
+            return tx
+          })
+
+          return Promise.all(preparedTxs.map(tx => signTransaction(tx)))
+        } catch (error) {
+          console.error('Error in wallet.signAllTransactions:', error)
+          throw error
+        }
+      }
+    }
+
+    const provider = new AnchorProvider(
+      connection,
+      wallet,
+      {
+        commitment: 'confirmed',
+        preflightCommitment: 'processed',
+        skipPreflight: false
+      }
+    )
+
+    console.log('Provider initialized with wallet:', {
+      publicKey: provider.wallet.publicKey.toBase58(),
+      hasSignTransaction: !!provider.wallet.signTransaction,
+      hasSignAllTransactions: !!provider.wallet.signAllTransactions,
+      connection: {
+        commitment: provider.connection.commitment,
+        rpcEndpoint: provider.connection.rpcEndpoint
+      }
+    })
+
+    return new Program(minimalIdl, programId, provider)
+  } catch (error) {
+    console.error('Error creating provider:', error)
+    return null
+  }
 }
 
 export const getReadonlyProvider = (): Program => {
@@ -621,7 +678,7 @@ export const createStudentGroup = async (
     const tx = await program.methods
       .createStudentGroup(name, students, [])
       .accounts({
-        admin,
+        authority: admin,
         group: groupPda,
         systemProgram: SystemProgram.programId,
       })

@@ -7,6 +7,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { AdminGuard } from '@/app/components/AdminGuard';
 import AddStudentForm from '@/app/components/AddStudentForm';
 import SignatureValidation from '@/app/components/SignatureValidation';
+import Image from 'next/image';
 
 interface Presence {
   id: string;
@@ -126,9 +127,11 @@ export default function SessionPresencePage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {presence.signature ? (
-                        <img
+                        <Image
                           src={presence.signature}
                           alt="Signature"
+                          width={64}
+                          height={32}
                           className="h-8 w-16 object-contain"
                         />
                       ) : (
