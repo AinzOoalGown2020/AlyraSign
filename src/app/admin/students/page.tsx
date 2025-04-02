@@ -113,11 +113,6 @@ export default function StudentsManagement() {
       return
     }
 
-    if (!signTransaction || !sendTransaction) {
-      toast.error('Erreur de configuration du wallet')
-      return
-    }
-
     setIsLoading(true)
     try {
       console.log('Starting group creation process...')
@@ -137,28 +132,21 @@ export default function StudentsManagement() {
 
       // Vérifier que l'utilisateur est bien l'admin
       if (publicKey.toBase58() !== config.solana.adminWalletAddress) {
-        toast.error('Vous n&apos;êtes pas autorisé à créer des groupes')
+        toast.error('Vous devez utiliser le wallet admin (79ziyYSUHVNENrJVinuotWZQ2TX7n44vSeo1cgxFPzSy)')
         return
       }
-
-      // Vérifier que le wallet est correctement initialisé
-      if (!program.provider || !program.provider.wallet) {
-        toast.error('Le wallet n\'est pas correctement initialisé')
-        return
-      }
-
-      console.log('Provider wallet:', {
-        publicKey: program.provider.wallet.publicKey.toBase58(),
-        hasSignTransaction: !!program.provider.wallet.signTransaction,
-        hasSignAllTransactions: !!program.provider.wallet.signAllTransactions
-      })
 
       await toast.promise(
         createStudentGroup(program, publicKey, currentGroup.name, currentGroup.students),
         {
           pending: 'Création du groupe en cours...',
           success: 'Groupe créé avec succès 🎉',
-          error: 'Erreur lors de la création du groupe 🤯'
+          error: {
+            render({data}) {
+              const errorMessage = data instanceof Error ? data.message : 'Erreur lors de la création du groupe'
+              return errorMessage
+            }
+          }
         }
       )
       
@@ -171,7 +159,6 @@ export default function StudentsManagement() {
         formations: []
       })
       
-      toast.success('Groupe créé avec succès !')
     } catch (error: unknown) {
       console.error('Error in handleAddGroup:', error)
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la création du groupe'

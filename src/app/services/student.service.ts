@@ -53,7 +53,8 @@ export const createStudentGroup = async (
       studentsCount: students.length,
       students: students,
       programId: program.programId.toBase58(),
-      groupPda: groupPda.toBase58()
+      groupPda: groupPda.toBase58(),
+      providerWallet: program.provider.wallet.publicKey.toBase58()
     })
 
     // Vérifier le solde du compte admin
@@ -67,29 +68,25 @@ export const createStudentGroup = async (
 
     console.log('Creating instruction...')
 
-    // Créer la transaction avec les bonnes options
-    const tx = await program.methods
+    // Utiliser directement la méthode rpc() d'Anchor
+    const signature = await program.methods
       .createStudentGroup(groupName, students, [])
       .accounts({
-        authority: admin,
+        authority: program.provider.wallet.publicKey, // Utiliser le wallet du provider
         group: groupPda,
         systemProgram: SystemProgram.programId,
       })
-      .signers([]) // Ne pas ajouter de signers supplémentaires ici
       .rpc({
-        commitment: 'confirmed',
-        skipPreflight: false, // Activer la simulation de transaction
-        preflightCommitment: 'processed'
+        commitment: 'confirmed'
       })
 
-    console.log('Transaction sent:', tx)
+    console.log('Transaction sent:', signature)
 
     // Attendre la confirmation
-    const latestBlockhash = await connection.getLatestBlockhash('confirmed')
-    const confirmation = await connection.confirmTransaction({
-      signature: tx,
-      ...latestBlockhash
-    }, 'confirmed')
+    const confirmation = await connection.confirmTransaction(
+      signature,
+      'confirmed'
+    )
 
     if (confirmation.value.err) {
       throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`)
@@ -106,7 +103,7 @@ export const createStudentGroup = async (
       throw new Error('Le groupe a été créé mais impossible de le vérifier')
     }
 
-    return tx
+    return signature
   } catch (error) {
     console.error('Error creating student group:', error)
     if (error instanceof Error) {

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("5efYRoL5mJVBmnJCwTtEmtErLyMSAjjh3BW3ra2quKCP");
+declare_id!("CCV4MnQ75r8ZY7n1ijtRkEv9MGdvkfZAYy23ggtYMf5r");
 
 #[program]
 pub mod alyrasign {
