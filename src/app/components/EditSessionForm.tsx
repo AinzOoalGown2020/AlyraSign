@@ -2,8 +2,16 @@
 
 import React, { useState } from 'react';
 
-interface CreateSessionFormProps {
+interface EditSessionFormProps {
+  session: {
+    id: string;
+    nom: string;
+    date: string;
+    heureDebut: string;
+    heureFin: string;
+  };
   onSubmit: (session: {
+    id: string;
     nom: string;
     date: string;
     heureDebut: string;
@@ -14,17 +22,19 @@ interface CreateSessionFormProps {
   formationDateFin: string;
 }
 
-export default function CreateSessionForm({ 
+export default function EditSessionForm({ 
+  session,
   onSubmit, 
   onCancel,
   formationDateDebut,
   formationDateFin 
-}: CreateSessionFormProps) {
+}: EditSessionFormProps) {
   const [formData, setFormData] = useState({
-    nom: '',
-    date: '',
-    heureDebut: '',
-    heureFin: '',
+    id: session.id,
+    nom: session.nom,
+    date: session.date,
+    heureDebut: session.heureDebut,
+    heureFin: session.heureFin,
   });
 
   const [error, setError] = useState<string>('');
@@ -49,7 +59,7 @@ export default function CreateSessionForm({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Créer une Nouvelle Session</h2>
+        <h2 className="text-2xl font-bold mb-6">Modifier la Session</h2>
         
         <div className="mb-4 p-4 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-700">
@@ -123,7 +133,7 @@ export default function CreateSessionForm({
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
-              Créer
+              Enregistrer
             </button>
           </div>
         </form>

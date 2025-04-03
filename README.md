@@ -85,68 +85,68 @@ Le programme contient quatre instructions principales :
 ## Structure du Projet
 
 ```
-alyra-sign/
-├── programs/
-│   └── alyrasign/        # Programme Solana
-│       └── src/         # Code source du programme
-├── tests/               # Tests du programme
-└── Anchor.toml         # Configuration Anchor
+src/
+├── app/                  # Pages et routes principales
+│   ├── admin/            # Interface administrateur
+│   ├── student/          # Interface étudiant
+│   ├── polls/            # Gestion des sondages
+│   ├── create/           # Création de nouveaux éléments
+│   ├── components/       # Composants spécifiques aux pages
+│   ├── context/          # Contextes React
+│   ├── hooks/            # Hooks personnalisés
+│   ├── store/            # État global
+│   └── utils/            # Utilitaires
+├── components/           # Composants réutilisables
+├── config/               # Configuration
+├── idl/                  # Interface Definition Language
+└── types/                # Types TypeScript
 ```
 
-## Technologies Utilisées
 
-Le projet est une application de vote sur Solana utilisant une architecture moderne avec Next.js pour le frontend et Anchor pour le smart contract Solana. Il implémente des fonctionnalités de vote avec gestion des PDA pour stocker les données sur la blockchain.
+## Versions des Outils Principaux
 
-Voici les détails des outils et technologies utilisés dans ce projet :
+Le projet est une application de vote sur Solana utilisant une architecture moderne avec Next.js pour le frontend et Anchor pour le programme (smart contract) Solana. Il implémente des fonctionnalités de vote avec gestion des PDA pour stocker les données sur la blockchain.
 
-1. **PDA (Program Derived Addresses)** :
-- Exemples de PDA utilisés :
-  - `counterPDA` pour le compteur
-  - `pollPDA` pour les sondages
-  - `candidatePDA` pour les candidats
-  - `registerationsPDA` pour les inscriptions
+### Framework et Runtime
+- Next.js : v14.1.0
+- React : v18.2.0
+- React DOM : v18.2.0
+- TypeScript : v5.3.3
 
-2. **Solana Web3.js** :
-- Version utilisée : `@solana/web3.js` v1.87.6
-- Utilisé pour les interactions avec la blockchain Solana
+### Blockchain et Web3
+- Solana Web3.js : v1.87.6
+- Anchor : v0.30.1
+- @project-serum/anchor : v0.26.0
+- @coral-xyz/anchor : v0.30.1
 
-3. **React Toastify** :
-- Oui, version 10.0.4
-- Utilisé pour les notifications dans l'interface utilisateur
+### Gestion d'État et UI
+- React Redux : v9.1.0
+- @reduxjs/toolkit : v2.1.0
+- React Query (TanStack) : v5.71.1
+- React Toastify : v10.0.4
 
-4. **Frameworks** :
-- Next.js v14.1.0 (Framework React)
-- React v18.2.0
-- TailwindCSS v3.4.1 (Framework CSS)
+### Wallet et Intégration Solana
+- @solana/wallet-adapter-base : v0.9.23
+- @solana/wallet-adapter-react : v0.15.35
+- @solana/wallet-adapter-react-ui : v0.9.34
+- @solana/wallet-adapter-wallets : v0.19.23
 
-5. **Librairies Backend** :
-- `@coral-xyz/anchor` v0.28.0 (Framework de développement Solana)
-- `@solana/wallet-adapter-base` v0.9.23
-- `@solana/wallet-adapter-react` v0.15.35
-- `@solana/wallet-adapter-react-ui` v0.9.34
-- `@solana/wallet-adapter-wallets` v0.19.23
-- `bn.js` v5.2.1 (Pour les opérations sur les grands nombres)
-- `buffer` v6.0.3
+### UI et Styling
+- TailwindCSS : v3.4.1
+- React Icons : v4.12.0
+- @heroicons/react : v2.2.0
 
-6. **Librairies Frontend** :
-- `react-icons` v4.12.0
-- `react-redux` v9.1.0
-- `@reduxjs/toolkit` v2.1.0
+### Outils de Développement
+- ESLint : v8.56.0
+- PostCSS : v8.4.33
+- Autoprefixer : v10.4.17
 
-7. **Outils de développement** :
-- TypeScript v5.3.3
-- ESLint v8.56.0
-- PostCSS v8.4.33
-- Autoprefixer v10.4.17
+### Utilitaires
+- bn.js : v5.2.1
+- buffer : v6.0.3
+- pino-pretty : v10.3.1
 
-8. **Programme Solana** :
-- Anchor v0.24.2
-- Solana Program v1.9.13
-
-9. **Déploiement** :
-- GitHub Actions pour les tests et le build
-
-10. **Environnement** :
+### Environnement
 - RPC URL : Devnet Solana
 - Program ID : FfEV5JPvSqajhtHQj2jUGvYz6GGNYkkMkHNhhE3rWqNp
 

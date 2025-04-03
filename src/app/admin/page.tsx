@@ -6,6 +6,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 import { AdminGuard } from '../components/AdminGuard';
 import CreateFormationForm from '../components/CreateFormationForm';
+import EditFormationForm from '../components/EditFormationForm';
 import { storageService } from '../services/storage.service';
 
 interface Formation {
@@ -29,6 +30,8 @@ export default function AdminPage() {
   const router = useRouter();
   const [formations, setFormations] = useState<Formation[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [selectedFormation, setSelectedFormation] = useState<Formation | null>(null);
 
   useEffect(() => {
     // Charger les formations au montage du composant
@@ -54,6 +57,33 @@ export default function AdminPage() {
     // Mettre à jour l'état local
     setFormations([...formations, newFormation]);
     setShowCreateForm(false);
+  };
+
+  const handleEditFormation = (formation: Formation) => {
+    setSelectedFormation(formation);
+    setShowEditForm(true);
+  };
+
+  const handleUpdateFormation = (updatedFormation: Formation) => {
+    // Mettre à jour la formation
+    storageService.updateFormation(updatedFormation.id, updatedFormation);
+    
+    // Mettre à jour l'état local
+    setFormations(formations.map(f => 
+      f.id === updatedFormation.id ? updatedFormation : f
+    ));
+    setShowEditForm(false);
+    setSelectedFormation(null);
+  };
+
+  const handleDeleteFormation = (formationId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
+      // Supprimer la formation
+      storageService.deleteFormation(formationId);
+      
+      // Mettre à jour l'état local
+      setFormations(formations.filter(f => f.id !== formationId));
+    }
   };
 
   return (
@@ -84,12 +114,26 @@ export default function AdminPage() {
                   <p>Au: {formation.dateFin}</p>
                   <p>Sessions: {formation.sessions.length}</p>
                 </div>
-                <button
-                  onClick={() => router.push(`/admin/formations/${formation.id}`)}
-                  className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-                >
-                  Gérer les Sessions
-                </button>
+                <div className="mt-4 flex space-x-2">
+                  <button
+                    onClick={() => router.push(`/admin/formations/${formation.id}`)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                  >
+                    Gérer les Sessions
+                  </button>
+                  <button
+                    onClick={() => handleEditFormation(formation)}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    onClick={() => handleDeleteFormation(formation.id)}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -100,6 +144,17 @@ export default function AdminPage() {
         <CreateFormationForm
           onSubmit={handleCreateFormation}
           onCancel={() => setShowCreateForm(false)}
+        />
+      )}
+
+      {showEditForm && selectedFormation && (
+        <EditFormationForm
+          formation={selectedFormation}
+          onSubmit={handleUpdateFormation}
+          onCancel={() => {
+            setShowEditForm(false);
+            setSelectedFormation(null);
+          }}
         />
       )}
     </AdminGuard>

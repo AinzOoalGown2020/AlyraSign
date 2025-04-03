@@ -6,6 +6,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { AdminGuard } from '../../../components/AdminGuard';
 import CreateSessionForm from '../../../components/CreateSessionForm';
+import EditSessionForm from '../../../components/EditSessionForm';
 import { storageService } from '../../../services/storage.service';
 
 interface Session {
@@ -16,15 +17,28 @@ interface Session {
   heureFin: string;
 }
 
+interface Formation {
+  id: string;
+  nom: string;
+  description: string;
+  dateDebut: string;
+  dateFin: string;
+}
+
 export default function FormationSessionsPage() {
   const { id } = useParams();
   const { publicKey } = useWallet();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [formation, setFormation] = useState<Formation | null>(null);
   const [showCreateSession, setShowCreateSession] = useState(false);
+  const [showEditSession, setShowEditSession] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Charger les sessions au montage du composant
+    // Charger la formation et les sessions au montage du composant
+    const loadedFormation = storageService.getFormation(id as string);
     const loadedSessions = storageService.getSessions(id as string);
+    setFormation(loadedFormation);
     setSessions(loadedSessions);
   }, [id]);
 
@@ -50,6 +64,33 @@ export default function FormationSessionsPage() {
     setShowCreateSession(false);
   };
 
+  const handleEditSession = (session: Session) => {
+    setSelectedSession(session);
+    setShowEditSession(true);
+  };
+
+  const handleUpdateSession = (updatedSession: Session) => {
+    // Mettre à jour la session
+    storageService.updateSession(updatedSession.id, updatedSession);
+    
+    // Mettre à jour l'état local
+    setSessions(sessions.map(s => 
+      s.id === updatedSession.id ? updatedSession : s
+    ));
+    setShowEditSession(false);
+    setSelectedSession(null);
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette session ?')) {
+      // Supprimer la session
+      storageService.deleteSession(sessionId);
+      
+      // Mettre à jour l'état local
+      setSessions(sessions.filter(s => s.id !== sessionId));
+    }
+  };
+
   if (!publicKey) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
@@ -59,12 +100,25 @@ export default function FormationSessionsPage() {
     );
   }
 
+  if (!formation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg">Chargement...</p>
+      </div>
+    );
+  }
+
   return (
     <AdminGuard>
       <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Sessions de la Formation</h1>
+            <div>
+              <h1 className="text-3xl font-bold">Sessions de la Formation</h1>
+              <p className="text-gray-600 mt-2">
+                {formation.nom} - Du {new Date(formation.dateDebut).toLocaleDateString()} au {new Date(formation.dateFin).toLocaleDateString()}
+              </p>
+            </div>
             <button
               onClick={() => setShowCreateSession(true)}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
@@ -94,10 +148,16 @@ export default function FormationSessionsPage() {
                     Gérer les Présences
                   </button>
                   <button
-                    onClick={() => {/* Logique pour modifier la session */}}
+                    onClick={() => handleEditSession(session)}
                     className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
                   >
                     Modifier
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSession(session.id)}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Supprimer
                   </button>
                 </div>
               </div>
@@ -110,6 +170,21 @@ export default function FormationSessionsPage() {
         <CreateSessionForm
           onSubmit={handleCreateSession}
           onCancel={() => setShowCreateSession(false)}
+          formationDateDebut={formation.dateDebut}
+          formationDateFin={formation.dateFin}
+        />
+      )}
+
+      {showEditSession && selectedSession && (
+        <EditSessionForm
+          session={selectedSession}
+          onSubmit={handleUpdateSession}
+          onCancel={() => {
+            setShowEditSession(false);
+            setSelectedSession(null);
+          }}
+          formationDateDebut={formation.dateDebut}
+          formationDateFin={formation.dateFin}
         />
       )}
     </AdminGuard>

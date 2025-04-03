@@ -14,11 +14,19 @@ export const storageService = {
     return formations ? JSON.parse(formations) : []
   },
 
+  getFormation: (id: string) => {
+    if (typeof window === 'undefined') return null
+    const formations = localStorage.getItem(STORAGE_KEYS.FORMATIONS)
+    const allFormations = formations ? JSON.parse(formations) : []
+    return allFormations.find((f: any) => f.id === id) || null
+  },
+
   saveFormation: (formation: any) => {
     if (typeof window === 'undefined') return
-    const formations = storageService.getFormations()
-    formations.push(formation)
-    localStorage.setItem(STORAGE_KEYS.FORMATIONS, JSON.stringify(formations))
+    const formations = localStorage.getItem(STORAGE_KEYS.FORMATIONS)
+    const allFormations = formations ? JSON.parse(formations) : []
+    allFormations.push(formation)
+    localStorage.setItem(STORAGE_KEYS.FORMATIONS, JSON.stringify(allFormations))
     return formation
   },
 
@@ -56,6 +64,14 @@ export const storageService = {
     allSessions.push(session)
     localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(allSessions))
     return session
+  },
+
+  deleteSession: (sessionId: string) => {
+    if (typeof window === 'undefined') return
+    const sessions = localStorage.getItem(STORAGE_KEYS.SESSIONS)
+    const allSessions = sessions ? JSON.parse(sessions) : []
+    const filtered = allSessions.filter((s: any) => s.id !== sessionId)
+    localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(filtered))
   },
 
   // Signatures
