@@ -2,15 +2,11 @@
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import {
-  fetchAllPolls,
   getCounter,
   getProvider,
   getReadonlyProvider,
   initialize,
 } from '../app/services/blockchain.service'
-import Link from 'next/link'
-import { Poll } from './utils/interfaces'
-import { BN } from '@coral-xyz/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { toast } from 'react-toastify'
 import { useRouter } from 'next/navigation'
@@ -20,7 +16,6 @@ import { config } from '@/config/param.config'
 export default function Home() {
   const router = useRouter()
   const { publicKey, signTransaction, sendTransaction } = useWallet()
-  const [polls, setPolls] = useState<Poll[]>([])
   const [isInitialized, setIsInitialized] = useState<boolean>(false)
   const programReadOnly = useMemo(() => getReadonlyProvider(), [])
 
@@ -30,7 +25,6 @@ export default function Home() {
   )
 
   const fetchData = useCallback(async () => {
-    fetchAllPolls(programReadOnly).then((data) => setPolls(data as any))
     const count = await getCounter(programReadOnly)
     setIsInitialized(count.toNumber() >= 0)
   }, [programReadOnly])

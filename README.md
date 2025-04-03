@@ -20,29 +20,6 @@ Remplacez `votre_adresse_devnet_phantom` par votre adresse Solana au format Base
 2. Vérifiez que l'adresse est correctement formatée
 3. Redémarrez le serveur de développement si nécessaire
 
-## Installation
-
-```bash
-npm install
-```
-
-## Développement
-
-```bash
-npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-## Démarrage en production
-
-```bash
-npm start
-```
 
 ## Technologies utilisées
 
@@ -55,7 +32,7 @@ npm start
 ## Fonctionnalités
 
 - Création de formations
-- Création de sessions
+- Création de sessions dans chaque formation
 - Enregistrement des présences
 - Validation des présences
 
@@ -89,13 +66,12 @@ src/
 ├── app/                  # Pages et routes principales
 │   ├── admin/            # Interface administrateur
 │   ├── student/          # Interface étudiant
-│   ├── polls/            # Gestion des sondages
-│   ├── create/           # Création de nouveaux éléments
-│   ├── components/       # Composants spécifiques aux pages
-│   ├── context/          # Contextes React
-│   ├── hooks/            # Hooks personnalisés
+│   ├── services/         # Services (blockchain, etc.)
+│   ├── utils/            # Utilitaires
 │   ├── store/            # État global
-│   └── utils/            # Utilitaires
+│   ├── hooks/            # Hooks personnalisés
+│   ├── context/          # Contextes React
+│   └── api/              # Routes API
 ├── components/           # Composants réutilisables
 ├── config/               # Configuration
 ├── idl/                  # Interface Definition Language
