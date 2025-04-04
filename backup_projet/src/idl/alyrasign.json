@@ -1,0 +1,388 @@
+{
+  "address": "CCV4MnQ75r8ZY7n1ijtRkEv9MGdvkfZAYy23ggtYMf5r",
+  "metadata": {
+    "name": "alyrasign",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Programme de gestion des présences sur Solana"
+  },
+  "instructions": [
+    {
+      "name": "create_formation",
+      "discriminator": [
+        124,
+        222,
+        4,
+        158,
+        57,
+        231,
+        220,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "formation",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_session",
+      "discriminator": [
+        242,
+        193,
+        143,
+        179,
+        150,
+        25,
+        122,
+        227
+      ],
+      "accounts": [
+        {
+          "name": "session",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "formation"
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "date",
+          "type": "i64"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_student_group",
+      "discriminator": [
+        210,
+        254,
+        164,
+        69,
+        13,
+        105,
+        157,
+        81
+      ],
+      "accounts": [
+        {
+          "name": "group",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  117,
+                  100,
+                  101,
+                  110,
+                  116,
+                  95,
+                  103,
+                  114,
+                  111,
+                  117,
+                  112
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "name"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "students",
+          "type": {
+            "vec": "string"
+          }
+        },
+        {
+          "name": "formations",
+          "type": {
+            "vec": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "register_presence",
+      "discriminator": [
+        96,
+        225,
+        148,
+        249,
+        59,
+        123,
+        2,
+        250
+      ],
+      "accounts": [
+        {
+          "name": "presence",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "session"
+        },
+        {
+          "name": "student",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "validate_presence",
+      "discriminator": [
+        133,
+        34,
+        74,
+        60,
+        5,
+        163,
+        241,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "presence",
+          "writable": true
+        },
+        {
+          "name": "session"
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Formation",
+      "discriminator": [
+        135,
+        155,
+        165,
+        216,
+        207,
+        193,
+        235,
+        205
+      ]
+    },
+    {
+      "name": "Presence",
+      "discriminator": [
+        255,
+        181,
+        116,
+        26,
+        172,
+        166,
+        141,
+        39
+      ]
+    },
+    {
+      "name": "Session",
+      "discriminator": [
+        243,
+        81,
+        72,
+        115,
+        214,
+        188,
+        72,
+        144
+      ]
+    },
+    {
+      "name": "StudentGroup",
+      "discriminator": [
+        141,
+        52,
+        207,
+        172,
+        252,
+        191,
+        107,
+        124
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "UnauthorizedValidation",
+      "msg": "Seul l'autorité de la session peut valider les présences"
+    }
+  ],
+  "types": [
+    {
+      "name": "Formation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Presence",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "session",
+            "type": "pubkey"
+          },
+          {
+            "name": "student",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "is_validated",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Session",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "formation",
+            "type": "pubkey"
+          },
+          {
+            "name": "date",
+            "type": "i64"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StudentGroup",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "students",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "formations",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

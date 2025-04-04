@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- Always ask me if we needs to update any components, frameworks, librairies, or else. If I answer "no", continue your thinking and action without update.

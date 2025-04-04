@@ -38,6 +38,7 @@ dependencies = [
 name = "alyrasign"
 version = "0.1.0"
 dependencies = [
+ "anchor-derive-space",
  "anchor-lang",
  "solana-program",
 ]

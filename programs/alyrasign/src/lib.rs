@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_derive_space::InitSpace;
 
 declare_id!("CCV4MnQ75r8ZY7n1ijtRkEv9MGdvkfZAYy23ggtYMf5r");
 
@@ -118,16 +119,31 @@ pub struct ValidatePresence<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(name: String, students: Vec<String>, formations: Vec<String>)]
 pub struct CreateStudentGroup<'info> {
     #[account(
         init,
         payer = authority,
-        space = 8 + 32 + 100 + 4000 + 4000 // discriminator + authority + name + students + formations
+        space = 8 + StudentGroup::INIT_SPACE,
+        seeds = [b"student_group", name.as_bytes()],
+        bump
     )]
     pub group: Account<'info, StudentGroup>,
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(InitSpace)]
+#[account]
+pub struct StudentGroup {
+    pub authority: Pubkey,
+    #[max_len(50)]
+    pub name: String,
+    #[max_len(100, 50)]  // 100 étudiants max, 50 caractères max par étudiant
+    pub students: Vec<String>,
+    #[max_len(20, 50)]   // 20 formations max, 50 caractères max par formation
+    pub formations: Vec<String>,
 }
 
 #[account]
@@ -151,14 +167,6 @@ pub struct Presence {
     pub student: Pubkey,
     pub timestamp: i64,
     pub is_validated: bool,
-}
-
-#[account]
-pub struct StudentGroup {
-    pub authority: Pubkey,
-    pub name: String,
-    pub students: Vec<String>,
-    pub formations: Vec<String>,
 }
 
 #[error_code]

@@ -20,14 +20,18 @@ export default function Home() {
   const programReadOnly = useMemo(() => getReadonlyProvider(), [])
 
   const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
+    () => {
+      if (!publicKey || !signTransaction || !sendTransaction) return null;
+      return getProvider(publicKey, signTransaction as any, sendTransaction as any);
+    },
     [publicKey, signTransaction, sendTransaction]
   )
 
   const fetchData = useCallback(async () => {
-    const count = await getCounter(programReadOnly)
-    setIsInitialized(count.toNumber() >= 0)
-  }, [programReadOnly])
+    if (!programReadOnly) return;
+    const count = await getCounter(programReadOnly);
+    setIsInitialized(count.toNumber() >= 0);
+  }, [programReadOnly]);
 
   useEffect(() => {
     if (!programReadOnly) return
